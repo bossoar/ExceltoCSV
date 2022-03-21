@@ -11,4 +11,12 @@ print (col.head())
 
 
 header = ["Categoría", "OS" , "Mod"]
-df.to_csv('output.csv', columns = header , index=False)
+
+# Filtro por categoria
+newdf = df[(df.Categoría == "Aplica Baja") ]
+
+# exporto
+newdf.to_csv('output.csv', columns = header , index=False)
+# & (df.carrier == "Cambio Empleador")]
+
+print(newdf)
