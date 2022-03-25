@@ -8,12 +8,38 @@ import pandas as pd
 import pandas as pd
 import time
 import logging
+from werkzeug.utils import secure_filename
+from werkzeug.datastructures import  FileStorage
+import os
 
 
 logging.basicConfig(filename='error4.log',level=logging.DEBUG)
 
 
 app = Flask(__name__)
+
+# Carpeta de subida
+app.config['UPLOAD_FOLDER'] = './Archivos'
+
+
+
+@app.route("/")
+def upload_file():
+     # renderiamos la plantilla "formulario.html"
+ return render_template('form.html')
+
+@app.route("/upload", methods=['POST'])
+def uploader():
+ if request.method == 'POST':
+  # obtenemos el archivo del input "archivo"
+  f = request.files['archivo']
+  filename = secure_filename(f.filename)
+  # Guardamos el archivo en el directorio "Archivos PDF"
+  f.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+  # Retornamos una respuesta satisfactoria
+  return "<h1>Archivo subido exitosamente</h1>"
+
+
 
 
 @app.route('/')
@@ -88,6 +114,10 @@ def index():
             
 
             return render_template('AutomatMPP.html')
+
+
+
+
 
 
 if __name__ == '__main__':
