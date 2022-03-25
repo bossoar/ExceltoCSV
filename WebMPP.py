@@ -43,11 +43,6 @@ def index():
             df.columns = df.columns.str.normalize('NFKD').str.encode('ascii', errors='ignore').str.decode('utf-8')
             df2.columns = df2.columns.str.normalize('NFKD').str.encode('ascii', errors='ignore').str.decode('utf-8')
 
-
-            # print (df.columns)
-            # print (df2.columns)
-
-
             # Filtro por categoria y filial 
             newdf = df.query('Filial in ('"13"', '"9"', '"30"') & Categoria.str.contains("deudor",case=False)')
             # print (newdf.columns)
