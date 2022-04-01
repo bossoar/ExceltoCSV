@@ -12,7 +12,7 @@ import logging
 from werkzeug.utils import secure_filename
 from werkzeug.datastructures import  FileStorage
 import os
-from flask import Flask, render_template, request, redirect, url_for, send_from_directory
+from flask import Flask, render_template, request, redirect, url_for, send_from_directory,send_file,current_app,Response
 # from werkzeug import secure_filename
 from werkzeug.utils import secure_filename
 from werkzeug.datastructures import  FileStorage
@@ -26,8 +26,10 @@ app = Flask(__name__)
 
 # This is the path to the upload directory
 app.config['UPLOAD_FOLDER'] = 'Archivos/'
+
+app.config['CSV_FOLDER'] = 'CSV/'
 # These are the extension that we are accepting to be uploaded
-app.config['ALLOWED_EXTENSIONS'] = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif','xls','xlsx'])
+app.config['ALLOWED_EXTENSIONS'] = set(['xls','xlsx','XLS','XLSX'])
 
 # For a given file, return whether it's an allowed type or not
 def allowed_file(filename):
@@ -46,23 +48,42 @@ def index():
 @app.route('/upload', methods=['POST'])
 def upload():
     # Get the name of the uploaded files
-    uploaded_files = request.files.getlist("file[]")
-    print(uploaded_files)
-    filenames = []
-    for file in uploaded_files:
-        # Check if the file is one of the allowed types/extensions
-        if file and allowed_file(file.filename):
-            # Make the filename safe, remove unsupported chars
-            filename = secure_filename(file.filename)
-            # Move the file form the temporal folder to the upload
-            # folder we setup
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            # Save the filename into a list, we'll use it later
-            filenames.append(filename)
-            # Redirect the user to the uploaded_file route, which
-            # will basicaly show on the browser the uploaded file
-    # Load an html page with a link to each uploaded file
-    return render_template('upload.html', filenames=filenames)
+    try:
+        uploaded_files = request.files.getlist("file[]")
+        # print(uploaded_files)
+        filenames = []
+        for file in uploaded_files:
+            # Check if the file is one of the allowed types/extensions
+            if file and allowed_file(file.filename):
+                # Make the filename safe, remove unsupported chars
+                filename = secure_filename(file.filename)
+                # Move the file form the temporal folder to the upload
+                # folder we setup
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                # Save the filename into a list, we'll use it later
+                filenames.append(filename)
+                # Redirect the user to the uploaded_file route, which
+                # will basicaly show on the browser the uploaded file
+        # Load an html page with a link to each uploaded file
+    
+        # uno los archivos y filtro .
+        ExportCSV()
+        # print(filenames)
+        # return render_template('download.html',filename=filename)
+        return render_template('download.html')
+    except Exception as e:
+                    print(e)
+
+
+# Para descargar los CSV
+@app.route('/download')
+def download_file():
+	#path = "html2pdf.pdf"
+	#path = "info.xlsx"
+	path = app.config['CSV_FOLDER']+"CartaSocioDeudor.csv"
+	#path = "sample.txt"
+	return send_file(path, as_attachment=True)    
+
 
 # This route is expecting a parameter containing the name
 # of a file. Then it will locate that file on the upload
@@ -70,31 +91,38 @@ def upload():
 # an image, that image is going to be show after the upload
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
-    return send_from_directory(app.config['UPLOAD_FOLDER'],
+    return send_from_directory(app.config['CSV_FOLDER'],
                                filename)
 
-
-
-
         
-    
 
+# @app.route('/ExportCSV/<filenames>')
+def ExportCSV():
+        try:
+            f = {}
+            i = 1
 
+            # recorro la carpeta de los archivos
+            with os.scandir(os.path.join(app.config['UPLOAD_FOLDER'])) as ficheros:
+                for fichero in ficheros:                   
+                    f[i] = fichero.name
+                    i += 1
 
-@app.route('/ExportCSV')
-def ExportCSVex():
-                
-            df = pd.read_excel (r'Bajas Tempranas Noviembre 2021.xlsx')
+            print(f[1])    
+            print(f[2])  
+            
+            df1 = pd.read_excel(os.path.join(os.path.join(app.config['UPLOAD_FOLDER']), f[1]) )
             # ventana = tkinter.Tk()
 
-            df2 = pd.read_excel (r'PATAGONIA NORTE.XLS')
+            df2 = pd.read_excel(os.path.join(os.path.join(app.config['UPLOAD_FOLDER']), f[2]) )
 
             # etiqueta = tkinter.Label(ventana, text = "Hola Mundo" , bg = "blue")
 
             # ventana.mainloop()  
 
             # remove spaces in columns name
-            df.columns = df.columns.str.replace(' ','_')
+            df1.columns = df1.columns.str.replace(' ','_')
+            df2.columns = df2.columns.str.replace(' ','_')
 
             # Creo dataframe vacio por error 
             # df2 = pd.DataFrame(pd.np.empty((0, 29)))   
@@ -105,23 +133,23 @@ def ExportCSVex():
             # df2.columns = df.columns.str.replace(' ','_')
 
 
-            df.columns = df.columns.str.normalize('NFKD').str.encode('ascii', errors='ignore').str.decode('utf-8')
+            df1.columns = df1.columns.str.normalize('NFKD').str.encode('ascii', errors='ignore').str.decode('utf-8')
             df2.columns = df2.columns.str.normalize('NFKD').str.encode('ascii', errors='ignore').str.decode('utf-8')
 
             # Filtro por categoria y filial 
-            newdf = df.query('Filial in ('"13"', '"9"', '"30"') & Categoria.str.contains("deudor",case=False)')
-            # print (newdf.columns)
+            newdf = df1.query('Filial in ('"13"', '"9"', '"30"') & Categoria.str.contains("deudor",case=False)')
+            # print (newdf)
 
 
             # Filtro por categoria y filial 
-            newdf2 = df2.query('FILGES in ('"13"', '"9"', '"30"') & Categoria.str.contains("deudor",case=False)')
-            # print (newdf2.columns)
+            newdf2 = df2.query('Filial in ('"13"', '"9"', '"30"') & Categoria.str.contains("deudor",case=False)')
+            # print (newdf2)
 
 
             # renombro la columna
             newdf = newdf.rename(columns={"MaxDeFIN_REL_LAB":"FECHA DE BAJA ABT"})
 
-            newdf2 = newdf2.rename(columns={"FILGES":"Filial"})
+            newdf2 = newdf2.rename(columns={"Filial":"Filial"})
             newdf2 = newdf2.rename(columns={"CUILSOC":"CUIL"})
             newdf2 = newdf2.rename(columns={"RAZON SOCIAL":"Razon"})
 
@@ -129,31 +157,35 @@ def ExportCSVex():
 
             # Defino las columnas que se van a exportar
             header = ["CUIL", "APELLIDO__NOMBRE" , "Razon","FECHA DE BAJA ABT"]
-
+            print (newdf.columns)
 
 
             # Combino las columnas de nombre y apellido 
-            newdf2["APELLIDO__NOMBRE"] = newdf2["APELLIDO"] +" "+ newdf2["NOMBRE"]
+            # newdf2["APELLIDO__NOMBRE"] = newdf2["APELLIDO"] +" "+ newdf2["NOMBRE"]
+            print(newdf2)
 
             # Defino las columnas que se van a exportar
             header2 = ["CUIL", "APELLIDO__NOMBRE" , "Razon"]
 
             frames = [newdf, newdf2]
 
+            # print(frames)
+
             result = pd.concat(frames)
 
-            print(result)
+            # print(result)
             
 
             # exporto
-            result.to_csv('CartaSocioDeudor.csv', columns = header , index=False)
+            result.to_csv(os.path.join(app.config['CSV_FOLDER'],'CartaSocioDeudor.csv'), columns = header , index=False)
 
 
-            print(newdf2)    
-            
+            # print(newdf2)    
+           
 
-            return render_template('AutomatMPP.html')
-
+            return render_template('upload.html')
+        except Exception as e:
+                    print(e) 
 
 
 

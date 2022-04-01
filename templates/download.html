@@ -1,7 +1,20 @@
-<!doctype html>
-<title>Python Flask File Download Example</title>
-<h2>Download a file</h2>
+{% include 'header.html' %}
 
-<p>
-	<a href="{{ url_for('.download_file') }}">Download</a>
-</p>
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+  </head>
+  <body>
+
+	<div class="container">
+
+		<p>
+			<p>
+				<h1>Descargar CSV</h1>	
+			</p>
+			
+			<a href="{{ url_for('.download_file') }}">CartaSocioDeudor</a>
+		</p>
+	</div>
+{% include 'footer.html' %} 

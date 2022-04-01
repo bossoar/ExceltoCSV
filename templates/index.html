@@ -1,11 +1,17 @@
+{% include 'header.html' %}
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
   <head>
-    <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css"
-          rel="stylesheet">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
   </head>
   <body>
     <div class="container">
+
+      <p>
+
+
+      </p>
       <div class="header">
         <h3 class="text-muted">Cargar archivos a filtrar</h3>
       </div>
@@ -13,11 +19,11 @@
       <div>
       
       <form action="upload" method="post" enctype="multipart/form-data">
-        <input type="file" multiple="" name="file[]" class="span3" /><br />
-        <input type="submit" value="Upload"  class="span2">
+        <input type="file" multiple="" name="file[]" class="form-control" /><br />
+        <input type="submit" value="Cargar"   class="btn btn-primary" >
       </form>
       </div>
     </div>
   </body>
 </html>
- 
+{% include 'footer.html' %} 
