@@ -99,75 +99,73 @@ def uploaded_file(filename):
 # @app.route('/ExportCSV/<filenames>')
 def ExportCSV():
         try:
-            f = {}
+            Bajas = {}
+            Patagonia = {}
             i = 1
 
             # recorro la carpeta de los archivos
             with os.scandir(os.path.join(app.config['UPLOAD_FOLDER'])) as ficheros:
-                for fichero in ficheros:                   
-                    f[i] = fichero.name
+                for fichero in ficheros: 
+                    if 'Bajas' in fichero.name  :                  
+                        Bajas[1] = fichero.name
+                    else:
+                        Patagonia[2] = fichero.name   
                     i += 1
 
-            print(f[1])    
-            print(f[2])  
+
+            # Verifico si es bajas o patagonia
             
-            df1 = pd.read_excel(os.path.join(os.path.join(app.config['UPLOAD_FOLDER']), f[1]) )
+
+            print(Bajas[1])    
+            print(Patagonia[2])  
+            
+            Bajas1 = pd.read_excel(os.path.join(os.path.join(app.config['UPLOAD_FOLDER']), Bajas[1] ))
             # ventana = tkinter.Tk()
 
-            df2 = pd.read_excel(os.path.join(os.path.join(app.config['UPLOAD_FOLDER']), f[2]) )
+            Patagonia2 = pd.read_excel(os.path.join(os.path.join(app.config['UPLOAD_FOLDER']), Patagonia[2] ))
 
-            # etiqueta = tkinter.Label(ventana, text = "Hola Mundo" , bg = "blue")
+            
 
-            # ventana.mainloop()  
+            Bajas1.columns = Bajas1.columns.str.replace(' ','_')
+            Patagonia2.columns = Patagonia2.columns.str.replace(' ','_')
 
-            # remove spaces in columns name
-            df1.columns = df1.columns.str.replace(' ','_')
-            df2.columns = df2.columns.str.replace(' ','_')
+            
 
-            # Creo dataframe vacio por error 
-            # df2 = pd.DataFrame(pd.np.empty((0, 29)))   
-
-            # print(df2)
-
-
-            # df2.columns = df.columns.str.replace(' ','_')
-
-
-            df1.columns = df1.columns.str.normalize('NFKD').str.encode('ascii', errors='ignore').str.decode('utf-8')
-            df2.columns = df2.columns.str.normalize('NFKD').str.encode('ascii', errors='ignore').str.decode('utf-8')
+            Bajas1.columns = Bajas1.columns.str.normalize('NFKD').str.encode('ascii', errors='ignore').str.decode('utf-8')
+            Patagonia2.columns = Patagonia2.columns.str.normalize('NFKD').str.encode('ascii', errors='ignore').str.decode('utf-8')
 
             # Filtro por categoria y filial 
-            newdf = df1.query('Filial in ('"13"', '"9"', '"30"') & Categoria.str.contains("deudor",case=False)')
+            # newBajas1 = Bajas1.query('Filial in ('"13"', '"9"', '"30"') & Categoria.str.contains("deudor",case=False)')
             # print (newdf)
 
 
             # Filtro por categoria y filial 
-            newdf2 = df2.query('Filial in ('"13"', '"9"', '"30"') & Categoria.str.contains("deudor",case=False)')
-            # print (newdf2)
+            # newPatagonia2 = Patagonia2.query('Filial in ('"13"', '"9"', '"30"') & Categoria.str.contains("deudor",case=False)')
+            # print (newPatagonia2)
 
 
             # renombro la columna
-            newdf = newdf.rename(columns={"MaxDeFIN_REL_LAB":"FECHA DE BAJA ABT"})
+            newBajas1 = newBajas1.rename(columns={"MaxDeFIN_REL_LAB":"FECHA DE BAJA ABT"})
 
-            newdf2 = newdf2.rename(columns={"Filial":"Filial"})
-            newdf2 = newdf2.rename(columns={"CUILSOC":"CUIL"})
-            newdf2 = newdf2.rename(columns={"RAZON SOCIAL":"Razon"})
+            newPatagonia2 = newPatagonia2.rename(columns={"Filial":"Filial"})
+            newPatagonia2 = newPatagonia2.rename(columns={"CUILSOC":"CUIL"})
+            newPatagonia2 = newPatagonia2.rename(columns={"RAZON SOCIAL":"Razon"})
 
-            # print(newdf2) 
+            # print(newPatagonia2) 
 
             # Defino las columnas que se van a exportar
-            header = ["CUIL", "APELLIDO__NOMBRE" , "Razon","FECHA DE BAJA ABT"]
-            print (newdf.columns)
+            header = ["CUIL", "APELLIDO__NOMBRE" , "Razon","FECHA DE BAJA ABT",]
+            # print (newBajas1.columns)
 
 
             # Combino las columnas de nombre y apellido 
-            # newdf2["APELLIDO__NOMBRE"] = newdf2["APELLIDO"] +" "+ newdf2["NOMBRE"]
-            print(newdf2)
+            # newPatagonia2["APELLIDO__NOMBRE"] = newPatagonia2["APELLIDO"] +" "+ newPatagonia2["NOMBRE"]
+            # print(newPatagonia2)
 
             # Defino las columnas que se van a exportar
             header2 = ["CUIL", "APELLIDO__NOMBRE" , "Razon"]
 
-            frames = [newdf, newdf2]
+            frames = [newBajas1, newPatagonia2]
 
             # print(frames)
 
@@ -180,7 +178,7 @@ def ExportCSV():
             result.to_csv(os.path.join(app.config['CSV_FOLDER'],'CartaSocioDeudor.csv'), columns = header , index=False)
 
 
-            # print(newdf2)    
+            # print(newPatagonia2)    
            
 
             return render_template('upload.html')
