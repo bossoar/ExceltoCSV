@@ -78,11 +78,12 @@ def upload():
 # Para descargar los CSV
 @app.route('/download')
 def download_file():
-	#path = "html2pdf.pdf"
-	#path = "info.xlsx"
 	path = app.config['CSV_FOLDER']+"CartaSocioDeudor.csv"
-	#path = "sample.txt"
+    # print(send_from_directory(app.config['CSV_FOLDER'])
 	return send_file(path, as_attachment=True)    
+
+    # return send_from_directory(app.config['CSV_FOLDER'],
+    #                            filename,as_attachment=True)
 
 
 # This route is expecting a parameter containing the name
@@ -136,7 +137,8 @@ def ExportCSV():
 
             # Filtro por categoria y filial 
             # newBajas1 = Bajas1.query('Filial in ('"13"', '"9"', '"30"') & Categoria.str.contains("deudor",case=False)')
-            # print (newdf)
+            print (Bajas1.columns)
+            print (Patagonia2.columns)
 
 
             # Filtro por categoria y filial 
@@ -145,16 +147,16 @@ def ExportCSV():
 
 
             # renombro la columna
-            newBajas1 = newBajas1.rename(columns={"MaxDeFIN_REL_LAB":"FECHA DE BAJA ABT"})
+            # newBajas1 = newBajas1.rename(columns={"MaxDeFIN_REL_LAB":"FECHA DE BAJA ABT"})
 
-            newPatagonia2 = newPatagonia2.rename(columns={"Filial":"Filial"})
-            newPatagonia2 = newPatagonia2.rename(columns={"CUILSOC":"CUIL"})
-            newPatagonia2 = newPatagonia2.rename(columns={"RAZON SOCIAL":"Razon"})
+            # newPatagonia2 = newPatagonia2.rename(columns={"Filial":"Filial"})
+            # newPatagonia2 = newPatagonia2.rename(columns={"CUILSOC":"CUIL"})
+            # newPatagonia2 = newPatagonia2.rename(columns={"RAZON SOCIAL":"Razon"})
 
             # print(newPatagonia2) 
 
             # Defino las columnas que se van a exportar
-            header = ["CUIL", "APELLIDO__NOMBRE" , "Razon","FECHA DE BAJA ABT",]
+            header = ["Categoria", "Mod" ,"CUIL","ICSoc","APELLIDO__NOMBRE","CUIT","Razon","MaxDeFIN_REL_LAB",]
             # print (newBajas1.columns)
 
 
@@ -163,19 +165,31 @@ def ExportCSV():
             # print(newPatagonia2)
 
             # Defino las columnas que se van a exportar
-            header2 = ["CUIL", "APELLIDO__NOMBRE" , "Razon"]
+            # header2 = ["CUIL", "APELLIDO__NOMBRE" , "Razon"]
 
-            frames = [newBajas1, newPatagonia2]
-
-            # print(frames)
+            frames = [Bajas1, Patagonia2]
 
             result = pd.concat(frames)
 
-            # print(result)
+            # print(frames)
+
+            # Filtro por categoria y filial 
+            newrCartaSocioDeudor = result.query('Filial in ('"13"', '"9"', '"30"') & Categoria.str.contains("deudor",case=False)')
+
+            newrCartaEmpresa = result.query('Filial in ('"13"', '"9"', '"30"') & Categoria.str.contains("Empresa",case=False)')
+
+            newrCartaSocioSinDeuda = result.query('Filial in ('"13"', '"9"', '"30"') & ~Categoria.str.contains("deudor",case=False) & Categoria.str.contains("CartaSocio",case=False)')
+
+            newrAnalisisManual = result.query('Filial in ('"13"', '"9"', '"30"') & ~Categoria.str.contains("deudor",case=False) &  ~Categoria.str.contains("CartaSocio",case=False) & ~Categoria.str.contains("Empresa",case=False)')
+            
+            # print(newrCartaEmpresa)
             
 
             # exporto
-            result.to_csv(os.path.join(app.config['CSV_FOLDER'],'CartaSocioDeudor.csv'), columns = header , index=False)
+            newrCartaSocioDeudor.to_csv(os.path.join(app.config['CSV_FOLDER'],'CartaSocioDeudor.csv'), columns = header , index=False)
+            newrCartaEmpresa.to_csv(os.path.join(app.config['CSV_FOLDER'],'CartaEmpresa.csv'), columns = header , index=False)
+            newrCartaSocioSinDeuda.to_csv(os.path.join(app.config['CSV_FOLDER'],'CartaSocioSinDeuda.csv'), columns = header , index=False)
+            newrAnalisisManual.to_csv(os.path.join(app.config['CSV_FOLDER'],'CartaAnalisisManual .csv'), columns = header , index=False)
 
 
             # print(newPatagonia2)    
