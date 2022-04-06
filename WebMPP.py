@@ -49,6 +49,11 @@ def csv_to_zip():
                     zipF.write(os.path.join(app.config['CSV_FOLDER'])+'CartaSocioDeudor.csv')
                     zipF.write(os.path.join(app.config['CSV_FOLDER'])+'CartaSocioSinDeuda.csv')
 
+                    # Elimino los csv                    
+                    os.remove(os.path.join(app.config['CSV_FOLDER'])+'CartaAnalisisManual.csv')
+                    os.remove(os.path.join(app.config['CSV_FOLDER'])+'CartaEmpresa.csv')
+                    os.remove(os.path.join(app.config['CSV_FOLDER'])+'CartaSocioDeudor.csv')
+                    os.remove(os.path.join(app.config['CSV_FOLDER'])+'CartaSocioSinDeuda.csv')
     except Exception as e:
                     print(e) 
 
@@ -141,7 +146,7 @@ def ExportCSV():
 
   
             # Defino las columnas que se van a exportar
-            header = ["Categoria", "Mod" ,"CUIL","ICSoc","APELLIDO__NOMBRE","CUIT","Razon","MaxDeFIN_REL_LAB",]
+            header = ["Categoria", "Mod" ,"CUIL","ICSoc","APELLIDO__NOMBRE","CUIT","Razon","MaxDeFIN_REL_LAB","Situacion_Informada"]
 
             frames = [Bajas1, Patagonia2]
 
