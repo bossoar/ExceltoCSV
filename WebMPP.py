@@ -116,39 +116,58 @@ def uploaded_file(filename):
 # @app.route('/ExportCSV/<filenames>')
 def ExportCSV():
         try:
-            Bajas = {}
-            Patagonia = {}
+            ABT = {}
+            MPP = {}
             i = 1
 
             # recorro la carpeta de los archivos
-            # Verifico si es bajas o patagonia
+            # Verifico si es ABT o MPP
             with os.scandir(os.path.join(app.config['UPLOAD_FOLDER'])) as ficheros:
                 for fichero in ficheros: 
-                    if 'Bajas' in fichero.name  :                  
-                        Bajas[1] = fichero.name
+                    if 'ABT' in fichero.name  :                  
+                        ABT[1] = fichero.name
                     else:
-                        Patagonia[2] = fichero.name   
+                        MPP[2] = fichero.name   
                     i += 1
 
 
 
             
-            Bajas1 = pd.read_excel(os.path.join(os.path.join(app.config['UPLOAD_FOLDER']), Bajas[1] ))
+            ABT1 = pd.read_excel(os.path.join(os.path.join(app.config['UPLOAD_FOLDER']), ABT[1] ))
             # ventana = tkinter.Tk()
 
-            Patagonia2 = pd.read_excel(os.path.join(os.path.join(app.config['UPLOAD_FOLDER']), Patagonia[2] ))
+            MPP2 = pd.read_excel(os.path.join(os.path.join(app.config['UPLOAD_FOLDER']), MPP[2] ))
 
-            Bajas1.columns = Bajas1.columns.str.replace(' ','_')
-            Patagonia2.columns = Patagonia2.columns.str.replace(' ','_')
+            ABT1.columns = ABT1.columns.str.replace(' ','_')
+            MPP2.columns = MPP2.columns.str.replace(' ','_')
 
-            Bajas1.columns = Bajas1.columns.str.normalize('NFKD').str.encode('ascii', errors='ignore').str.decode('utf-8')
-            Patagonia2.columns = Patagonia2.columns.str.normalize('NFKD').str.encode('ascii', errors='ignore').str.decode('utf-8')
+            ABT1.columns = ABT1.columns.str.normalize('NFKD').str.encode('ascii', errors='ignore').str.decode('utf-8')
+            MPP2.columns = MPP2.columns.str.normalize('NFKD').str.encode('ascii', errors='ignore').str.decode('utf-8')
 
+            # Combino las columnas de nombre y apellido 
+            MPP2["APELLIDO__NOMBRE"] = MPP2["APELLIDO"] +" "+ MPP2["NOMBRE"]
+
+            # Renombro columnas
+            MPP2 = MPP2.rename(columns={"FILGES":"Filial"})    
+            MPP2 = MPP2.rename(columns={"CUILSOC":"CUIL"})
+            MPP2 = MPP2.rename(columns={"RAZON_SOCIAL":"Razon"})
+            MPP2 = MPP2.rename(columns={"MOD":"Mod"})
+            MPP2 = MPP2.rename(columns={"IC_S":"ICSoc"})
+            MPP2 = MPP2.rename(columns={"CUITEMP":"CUIT"})
+            ABT1 = ABT1.rename(columns={"Situacion_Informada":"DIAGNOSTICO"})
+            ABT1 = ABT1.rename(columns={"IOSoc":"CONTR"})
+            
+
+            
+
+
+
+            
   
             # Defino las columnas que se van a exportar
-            header = ["Categoria", "Mod" ,"CUIL","ICSoc","APELLIDO__NOMBRE","CUIT","Razon","MaxDeFIN_REL_LAB","Situacion_Informada"]
+            header = ["Categoria", "Mod","DIAGNOSTICO","CANT_EST","PCO","CUIL","CONTR","APELLIDO__NOMBRE","CUIT","Razon","MaxDeFIN_REL_LAB","MAILSOC","Cambio_Empleador"]
 
-            frames = [Bajas1, Patagonia2]
+            frames = [ABT1, MPP2]
 
             result = pd.concat(frames)
 
