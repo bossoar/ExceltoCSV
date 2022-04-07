@@ -18,6 +18,7 @@ from werkzeug.utils import secure_filename
 from werkzeug.datastructures import  FileStorage
 import zipfile
 import shutil
+import glob
 
 logging.basicConfig(filename='error4.log',level=logging.DEBUG)
 
@@ -31,6 +32,20 @@ app.config['UPLOAD_FOLDER'] = 'Archivos/'
 app.config['CSV_FOLDER'] = 'CSV/'
 # These are the extension that we are accepting to be uploaded
 app.config['ALLOWED_EXTENSIONS'] = set(['xls','xlsx','XLS','XLSX'])
+
+def remove_file():
+        try:
+            py_files = glob.glob(app.config['UPLOAD_FOLDER']+'*.xls')
+
+            for py_file in py_files:
+                try:
+                    os.remove(py_file)
+                except OSError as e:
+                    print(f"Error:{ e.strerror}")
+        except Exception as e:
+                        print(e)
+
+
 
 # Creo el zip con los csv
 def csv_to_zip():
@@ -54,6 +69,9 @@ def csv_to_zip():
                     os.remove(os.path.join(app.config['CSV_FOLDER'])+'CartaEmpresa.csv')
                     os.remove(os.path.join(app.config['CSV_FOLDER'])+'CartaSocioDeudor.csv')
                     os.remove(os.path.join(app.config['CSV_FOLDER'])+'CartaSocioSinDeuda.csv')
+
+
+
     except Exception as e:
                     print(e) 
 
@@ -92,8 +110,10 @@ def upload():
         ExportCSV()
 
         csv_to_zip()
-        # print(filenames)
-        # return render_template('download.html',filename=filename)
+
+        # Elimino los archivos importados    
+        remove_file()
+
         return render_template('download.html')
     except Exception as e:
                     print(e)
@@ -156,6 +176,8 @@ def ExportCSV():
             MPP2 = MPP2.rename(columns={"CUITEMP":"CUIT"})
             ABT1 = ABT1.rename(columns={"Situacion_Informada":"DIAGNOSTICO"})
             ABT1 = ABT1.rename(columns={"IOSoc":"CONTR"})
+            MPP2 = MPP2.rename(columns={"MAILSOCIO":"MAILSOC"})
+
             
 
             
