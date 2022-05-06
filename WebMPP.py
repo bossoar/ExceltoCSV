@@ -20,6 +20,7 @@ import zipfile
 import shutil
 import glob
 
+
 logging.basicConfig(filename='error4.log',level=logging.DEBUG)
 
 
@@ -95,6 +96,7 @@ def upload():
         uploaded_files = request.files.getlist("file[]")
         # print(uploaded_files)
         filenames = []
+        cantidadArchivos = 0
         for file in uploaded_files:
             # Check if the file is one of the allowed types/extensions
             if file and allowed_file(file.filename):
@@ -105,10 +107,15 @@ def upload():
                 file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
                 # Save the filename into a list, we'll use it later
                 filenames.append(filename)
-    
+                cantidadArchivos = cantidadArchivos + 1
         # uno los archivos y filtro .
+
+
+        print(cantidadArchivos)
+
         ExportCSV()
 
+        # genero el zip
         csv_to_zip()
 
         # Elimino los archivos importados    
@@ -150,7 +157,13 @@ def ExportCSV():
                         MPP[2] = fichero.name   
                     i += 1
 
+            if not ABT[1]:
+                
+               print('ABT[1] no tiene datos')
 
+            else:
+
+               print('ABT[1] tiene datos')            
 
             
             ABT1 = pd.read_excel(os.path.join(os.path.join(app.config['UPLOAD_FOLDER']), ABT[1] ))
@@ -178,14 +191,7 @@ def ExportCSV():
             ABT1 = ABT1.rename(columns={"IOSoc":"CONTR"})
             MPP2 = MPP2.rename(columns={"MAILSOCIO":"MAILSOC"})
 
-            
-
-            
-
-
-
-            
-  
+              
             # Defino las columnas que se van a exportar
             header = ["Categoria", "Mod","DIAGNOSTICO","CANT_EST","PCO","CUIL","CONTR","APELLIDO__NOMBRE","CUIT","Razon","MaxDeFIN_REL_LAB","MAILSOC","Cambio_Empleador"]
 
