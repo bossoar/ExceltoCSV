@@ -201,7 +201,7 @@ def ExportCSV():
 
             result = pd.concat(frames)
 
-            print(result.query('Filial in ('"13"', '"9"', '"30"') & ~Categoria.str.contains("deudor|CartaSocio|Empresa|Empleador|Sumatoria|Pluriempleo",case=False) '))
+           
 
             # Filtro por categoria y filial 
             newrCartaSocioDeudor = result.query('Filial in ('"13"', '"9"', '"30"') & Categoria.str.contains("deudor",case=False)')
