@@ -64,12 +64,14 @@ def csv_to_zip():
                     zipF.write(os.path.join(app.config['CSV_FOLDER'])+'CartaEmpresa.csv')
                     zipF.write(os.path.join(app.config['CSV_FOLDER'])+'CartaSocioDeudor.csv')
                     zipF.write(os.path.join(app.config['CSV_FOLDER'])+'CartaSocioSinDeuda.csv')
+                    zipF.write(os.path.join(app.config['CSV_FOLDER'])+'Afiliaciones.csv')
 
                     # Elimino los csv                    
                     os.remove(os.path.join(app.config['CSV_FOLDER'])+'CartaAnalisisManual.csv')
                     os.remove(os.path.join(app.config['CSV_FOLDER'])+'CartaEmpresa.csv')
                     os.remove(os.path.join(app.config['CSV_FOLDER'])+'CartaSocioDeudor.csv')
                     os.remove(os.path.join(app.config['CSV_FOLDER'])+'CartaSocioSinDeuda.csv')
+                    os.remove(os.path.join(app.config['CSV_FOLDER'])+'Afiliaciones.csv')
 
 
 
@@ -151,14 +153,14 @@ def ExportCSV():
             # Verifico si es ABT o MPP
             with os.scandir(os.path.join(app.config['UPLOAD_FOLDER'])) as ficheros:
                 for fichero in ficheros: 
-                    if 'ABT' in fichero.name  :                  
+                    if 'ABT' in fichero.name:                  
                         ABT[1] = fichero.name
                     else:
                         MPP[2] = fichero.name   
                     i += 1
 
             if not ABT[1]:
-                
+
                print('ABT[1] no tiene datos')
 
             else:
@@ -199,19 +201,24 @@ def ExportCSV():
 
             result = pd.concat(frames)
 
+            print(result.query('Filial in ('"13"', '"9"', '"30"') & ~Categoria.str.contains("deudor|CartaSocio|Empresa|Empleador|Sumatoria|Pluriempleo",case=False) '))
+
             # Filtro por categoria y filial 
             newrCartaSocioDeudor = result.query('Filial in ('"13"', '"9"', '"30"') & Categoria.str.contains("deudor",case=False)')
 
             newrCartaEmpresa = result.query('Filial in ('"13"', '"9"', '"30"') & Categoria.str.contains("Empresa",case=False)')
 
-            newrCartaSocioSinDeuda = result.query('Filial in ('"13"', '"9"', '"30"') & ~Categoria.str.contains("deudor",case=False) & Categoria.str.contains("CartaSocio",case=False)')
+            newrCartaSocioSinDeuda = result.query('Filial in ('"13"', '"9"', '"30"') & ~Categoria.str.contains("deudor",case=False) & Categoria.str.contains("CartaSocio|Carta Socio",case=False)')
 
-            newrAnalisisManual = result.query('Filial in ('"13"', '"9"', '"30"') & ~Categoria.str.contains("deudor",case=False) &  ~Categoria.str.contains("CartaSocio",case=False) & ~Categoria.str.contains("Empresa",case=False)')
+            newAfiliaciones = result.query('Filial in ('"13"', '"9"', '"30"') & Categoria.str.contains("Cambio Empleador|Sumatoria|Pluriempleo",case=False) ')
+              
+            newrAnalisisManual = result.query('Filial in ('"13"', '"9"', '"30"') & ~Categoria.str.contains("deudor|CartaSocio|Carta Socio|Empresa|Empleador|Sumatoria|Pluriempleo",case=False) ')
 
             # exporto
             newrCartaSocioDeudor.to_csv(os.path.join(app.config['CSV_FOLDER'],'CartaSocioDeudor.csv'), columns = header , index=False)
             newrCartaEmpresa.to_csv(os.path.join(app.config['CSV_FOLDER'],'CartaEmpresa.csv'), columns = header , index=False)
             newrCartaSocioSinDeuda.to_csv(os.path.join(app.config['CSV_FOLDER'],'CartaSocioSinDeuda.csv'), columns = header , index=False)
+            newAfiliaciones.to_csv(os.path.join(app.config['CSV_FOLDER'],'Afiliaciones.csv'), columns = header , index=False)
             newrAnalisisManual.to_csv(os.path.join(app.config['CSV_FOLDER'],'CartaAnalisisManual.csv'), columns = header , index=False)
 
             return render_template('upload.html')
