@@ -5,6 +5,7 @@ from flask import Flask
 from flask import render_template,request,redirect
 from logging import FileHandler,WARNING
 import logging
+from numpy import int64
 import pandas as pd
 import pandas as pd
 import time
@@ -19,12 +20,22 @@ from werkzeug.datastructures import  FileStorage
 import zipfile
 import shutil
 import glob
+import pyodbc
+import numpy as np
 
 
 logging.basicConfig(filename='error4.log',level=logging.DEBUG)
 
 
 app = Flask(__name__)
+
+
+# Conectar base de datos
+# conexion = pyodbc.connect('DRIVER={SQL Server Native Client 11.0};'
+#                             'SERVER=SRV13-VMSQL\\NORPATAGONICA;'
+#                             'DATABASE=prueba;'
+#                            ' UID=UsuarioOSDE;'
+#                             'PWD=EDSOoirausU') 
 
 
 # This is the path to the upload directory
@@ -192,6 +203,10 @@ def ExportCSV():
             ABT1 = ABT1.rename(columns={"Situacion_Informada":"DIAGNOSTICO"})
             ABT1 = ABT1.rename(columns={"IOSoc":"CONTR"})
             MPP2 = MPP2.rename(columns={"MAILSOCIO":"MAILSOC"})
+            ABT1 = ABT1.rename(columns={"CuitAT":"Cambio_Empleador"})
+
+
+           
 
               
             # Defino las columnas que se van a exportar
@@ -201,7 +216,19 @@ def ExportCSV():
 
             result = pd.concat(frames)
 
-           
+            try:
+
+                # saco los Nan
+                # cambio tipo de columna a int por el problema de 1.0
+                result["CANT_EST"] = result["CANT_EST"].fillna(0).apply(np.int64) # Convert nan/null to 0
+                result["Cambio_Empleador"] = result["Cambio_Empleador"].fillna(0).apply(np.int64) # Convert nan/null to 0
+                
+               
+
+            except Exception as e:
+                        print(e)
+
+            # print(result)
 
             # Filtro por categoria y filial 
             newrCartaSocioDeudor = result.query('Filial in ('"13"', '"9"', '"30"') & Categoria.str.contains("deudor",case=False)')
@@ -220,6 +247,8 @@ def ExportCSV():
             newrCartaSocioSinDeuda.to_csv(os.path.join(app.config['CSV_FOLDER'],'CartaSocioSinDeuda.csv'), columns = header , index=False)
             newAfiliaciones.to_csv(os.path.join(app.config['CSV_FOLDER'],'Afiliaciones.csv'), columns = header , index=False)
             newrAnalisisManual.to_csv(os.path.join(app.config['CSV_FOLDER'],'CartaAnalisisManual.csv'), columns = header , index=False)
+
+            
 
             return render_template('upload.html')
         except Exception as e:
