@@ -1,5 +1,6 @@
 from logging import debug
 from os import P_DETACH
+from unittest import result
 from warnings import catch_warnings
 from flask import Flask
 from flask import render_template,request,redirect
@@ -32,12 +33,7 @@ logging.basicConfig(filename='error4.log',level=logging.DEBUG)
 app = Flask(__name__)
 
 
-# Connect to database
-connectionString = database.GetConnectionString()
-conn = pyodbc.connect(connectionString)
-query = "SELECT GM,Valorizacion,[CM],[%CM] FROM [dw].[dbo].[MPPCM] where [DNUM_IC] = '2000701585'"
-dfCM = pd.read_sql(query, conn)
-print(dfCM)
+
 
 
 
@@ -212,12 +208,30 @@ def ExportCSV():
            
 
               
-            # Defino las columnas que se van a exportar
-            header = ["Categoria", "Mod","DIAGNOSTICO","CANT_EST","PCO","CUIL","CONTR","APELLIDO__NOMBRE","CUIT","Razon","MaxDeFIN_REL_LAB","MAILSOC","Cambio_Empleador"]
-
+           
             frames = [ABT1, MPP2]
 
-            result = pd.concat(frames)
+            df_concat = pd.concat(frames)
+
+            # Pego la CM  por IC
+            # Connect to database
+            connectionString = database.GetConnectionString()
+            conn = pyodbc.connect(connectionString)
+            query = "SELECT GM,Valorizacion,[CM],[%CM],[DNUM_IC] FROM [dw].[dbo].[MPPCM]"
+            dfCM = pd.read_sql(query, conn)
+            # print(dfCM)
+            
+            dfCM["DNUM_IC"] = dfCM["DNUM_IC"].astype(str).astype(int) #convierto la columna a int para el merge
+            result = df_concat.merge(dfCM, left_on='ICSoc', right_on='DNUM_IC')   #uno los DF
+
+            result.columns=result.columns.str.replace('%','P') #reemplzao caracter especial %
+ 
+
+             # Defino las columnas que se van a exportar
+            header = ["Categoria", "Mod","DIAGNOSTICO","CANT_EST","PCO","CUIL","CONTR","APELLIDO__NOMBRE","CUIT","Razon","MaxDeFIN_REL_LAB","MAILSOC","Cambio_Empleador","GM","Valorizacion","CM","PCM"]
+
+
+
 
             try:
 
