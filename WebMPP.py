@@ -22,6 +22,8 @@ import shutil
 import glob
 import pyodbc
 import numpy as np
+import pyodbc
+import database
 
 
 logging.basicConfig(filename='error4.log',level=logging.DEBUG)
@@ -30,12 +32,13 @@ logging.basicConfig(filename='error4.log',level=logging.DEBUG)
 app = Flask(__name__)
 
 
-# Conectar base de datos
-# conexion = pyodbc.connect('DRIVER={SQL Server Native Client 11.0};'
-#                             'SERVER=SRV13-VMSQL\\NORPATAGONICA;'
-#                             'DATABASE=prueba;'
-#                            ' UID=UsuarioOSDE;'
-#                             'PWD=EDSOoirausU') 
+# Connect to database
+connectionString = database.GetConnectionString()
+conn = pyodbc.connect(connectionString)
+query = "SELECT GM,Valorizacion,[CM],[%CM] FROM [dw].[dbo].[MPPCM] where [DNUM_IC] = '2000701585'"
+dfCM = pd.read_sql(query, conn)
+print(dfCM)
+
 
 
 # This is the path to the upload directory
