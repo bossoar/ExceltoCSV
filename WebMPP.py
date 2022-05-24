@@ -247,13 +247,13 @@ def ExportCSV():
                 # saco los Nan
                 # cambio tipo de columna a int por el problema de 1.0
                 result["CANT_EST"] = result["CANT_EST"].fillna(0).apply(np.int64) # Convert nan/null to 0
-                result["Cambio_Empleador"] = result["Cambio_Empleador"].fillna(0).apply(np.int64) 
-                result["GM"] = result["GM"].fillna(0).apply(np.int64)
-                result["Valorizacion"] = result["Valorizacion"].fillna(0).apply(np.int64) 
-                result["CM"] = result["CM"].fillna(0).apply(np.int64) 
+                result["Cambio_Empleador"] = result["Cambio_Empleador"].fillna(0).apply(np.int64)               
+                result["GM"] = list(map('${:,.2f}'.format,result["GM"].fillna(0).replace(".", ",")))               
+                result["Valorizacion"] = list(map('${:,.2f}'.format,result["Valorizacion"].fillna(0).replace(".", ",")))
+                result["CM"] = list(map('${:,.2f}'.format,result["CM"].fillna(0).replace(".", ",")))
                 
                 # para la columna porcetaje
-                result["PCM"] = result["PCM"].fillna(0) * 100.
+                result["PCM"] = list(map('%{:,.2f}'.format,(result["PCM"].fillna(0) * 100.).replace(".", ",")))
 
 
             except Exception as e:
@@ -273,12 +273,12 @@ def ExportCSV():
             newrAnalisisManual = result.query('Filial in ('"13"', '"9"', '"30"') & ~Categoria.str.contains("deudor|CartaSocio|Carta Socio|Empresa|Empleador|Sumatoria|Pluriempleo",case=False) ')
 
             # exporto
-            newrCartaSocioDeudor.to_csv(os.path.join(app.config['CSV_FOLDER'],'CartaSocioDeudor.csv'), columns = header , index=False ,  float_format = '%.2f%%')
-            newrCartaEmpresa.to_csv(os.path.join(app.config['CSV_FOLDER'],'CartaEmpresa.csv'), columns = header , index=False ,  float_format = '%.2f%%')
-            newrCartaSocioSinDeuda.to_csv(os.path.join(app.config['CSV_FOLDER'],'CartaSocioSinDeuda.csv'), columns = header , index=False ,  float_format = '%.2f%%')
+            newrCartaSocioDeudor.to_csv(os.path.join(app.config['CSV_FOLDER'],'CartaSocioDeudor.csv'), columns = header , index=False )
+            newrCartaEmpresa.to_csv(os.path.join(app.config['CSV_FOLDER'],'CartaEmpresa.csv'), columns = header , index=False )
+            newrCartaSocioSinDeuda.to_csv(os.path.join(app.config['CSV_FOLDER'],'CartaSocioSinDeuda.csv'), columns = header )
 
-            newAfiliaciones.to_csv(os.path.join(app.config['CSV_FOLDER'],'Afiliaciones.csv'), columns = header , index=False ,  float_format = '%.2f%%') #formateo las columnas e porcentaje
-            newrAnalisisManual.to_csv(os.path.join(app.config['CSV_FOLDER'],'CartaAnalisisManual.csv'), columns = header , index=False ,  float_format = '%.2f%%' )
+            newAfiliaciones.to_csv(os.path.join(app.config['CSV_FOLDER'],'Afiliaciones.csv'), columns = header , index=False)
+            newrAnalisisManual.to_csv(os.path.join(app.config['CSV_FOLDER'],'CartaAnalisisManual.csv'), columns = header , index=False )
 
             
 
