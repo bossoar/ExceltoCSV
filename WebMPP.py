@@ -6,7 +6,7 @@ from flask import Flask
 from flask import render_template,request,redirect
 from logging import FileHandler,WARNING
 import logging
-from numpy import int64
+from numpy import dtype, int64
 import pandas as pd
 import pandas as pd
 import time
@@ -213,22 +213,25 @@ def ExportCSV():
 
             df_concat = pd.concat(frames)
 
-            # Pego la CM  por IC
-            # Connect to database
-            connectionString = database.GetConnectionString()
-            conn = pyodbc.connect(connectionString)
-            query = "SELECT GM,Valorizacion,[CM],[%CM],[DNUM_IC] FROM [dw].[dbo].[MPPCM]"
-            dfCM = pd.read_sql(query, conn)
-            # print(dfCM)
-            
-            dfCM["DNUM_IC"] = dfCM["DNUM_IC"].astype(str).astype(int) #convierto la columna a int para el merge
-            result = df_concat.merge(dfCM, left_on='ICSoc', right_on='DNUM_IC')   #uno los DF
+            try: 
+                # Pego la CM  por IC
+                # Connect to database
+                connectionString = database.GetConnectionString()
+                conn = pyodbc.connect(connectionString)
+                query = "SELECT GM,Valorizacion,[CM],[%CM],[DNUM_IC] FROM [dw].[dbo].[MPPCMFinal]"
+                dfCM = pd.read_sql(query, conn)
+                # print(dfCM)
+                
+                dfCM["DNUM_IC"] = dfCM["DNUM_IC"].astype(str).astype(int) #convierto la columna a int para el merge
+                result = df_concat.merge(dfCM, left_on='ICSoc', right_on='DNUM_IC')   #uno los DF
 
-            result.columns=result.columns.str.replace('%','P') #reemplzao caracter especial %
- 
+                result.columns=result.columns.str.replace('%','P') #reemplzao caracter especial %
+            except Exception as e:
+                        print(e) 
 
              # Defino las columnas que se van a exportar
             header = ["Categoria", "Mod","DIAGNOSTICO","CANT_EST","PCO","CUIL","CONTR","APELLIDO__NOMBRE","CUIT","Razon","MaxDeFIN_REL_LAB","MAILSOC","Cambio_Empleador","GM","Valorizacion","CM","PCM"]
+            
 
 
 
@@ -238,9 +241,14 @@ def ExportCSV():
                 # saco los Nan
                 # cambio tipo de columna a int por el problema de 1.0
                 result["CANT_EST"] = result["CANT_EST"].fillna(0).apply(np.int64) # Convert nan/null to 0
-                result["Cambio_Empleador"] = result["Cambio_Empleador"].fillna(0).apply(np.int64) # Convert nan/null to 0
+                result["Cambio_Empleador"] = result["Cambio_Empleador"].fillna(0).apply(np.int64) 
+                result["GM"] = result["GM"].fillna(0).apply(np.int64)
+                result["Valorizacion"] = result["Valorizacion"].fillna(0).apply(np.int64) 
+                result["CM"] = result["CM"].fillna(0).apply(np.int64) 
                 
-               
+                # para la columna porcetaje
+                result["PCM"] = result["PCM"].fillna(0) * 100.
+
 
             except Exception as e:
                         print(e)
@@ -259,11 +267,12 @@ def ExportCSV():
             newrAnalisisManual = result.query('Filial in ('"13"', '"9"', '"30"') & ~Categoria.str.contains("deudor|CartaSocio|Carta Socio|Empresa|Empleador|Sumatoria|Pluriempleo",case=False) ')
 
             # exporto
-            newrCartaSocioDeudor.to_csv(os.path.join(app.config['CSV_FOLDER'],'CartaSocioDeudor.csv'), columns = header , index=False)
-            newrCartaEmpresa.to_csv(os.path.join(app.config['CSV_FOLDER'],'CartaEmpresa.csv'), columns = header , index=False)
-            newrCartaSocioSinDeuda.to_csv(os.path.join(app.config['CSV_FOLDER'],'CartaSocioSinDeuda.csv'), columns = header , index=False)
-            newAfiliaciones.to_csv(os.path.join(app.config['CSV_FOLDER'],'Afiliaciones.csv'), columns = header , index=False)
-            newrAnalisisManual.to_csv(os.path.join(app.config['CSV_FOLDER'],'CartaAnalisisManual.csv'), columns = header , index=False)
+            newrCartaSocioDeudor.to_csv(os.path.join(app.config['CSV_FOLDER'],'CartaSocioDeudor.csv'), columns = header , index=False ,  float_format = '%.2f%%')
+            newrCartaEmpresa.to_csv(os.path.join(app.config['CSV_FOLDER'],'CartaEmpresa.csv'), columns = header , index=False ,  float_format = '%.2f%%')
+            newrCartaSocioSinDeuda.to_csv(os.path.join(app.config['CSV_FOLDER'],'CartaSocioSinDeuda.csv'), columns = header , index=False ,  float_format = '%.2f%%')
+
+            newAfiliaciones.to_csv(os.path.join(app.config['CSV_FOLDER'],'Afiliaciones.csv'), columns = header , index=False ,  float_format = '%.2f%%') #formateo las columnas e porcentaje
+            newrAnalisisManual.to_csv(os.path.join(app.config['CSV_FOLDER'],'CartaAnalisisManual.csv'), columns = header , index=False ,  float_format = '%.2f%%' )
 
             
 
