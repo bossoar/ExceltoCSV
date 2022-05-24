@@ -177,6 +177,11 @@ def ExportCSV():
 
                print('ABT[1] tiene datos')            
 
+
+
+
+    
+
             
             ABT1 = pd.read_excel(os.path.join(os.path.join(app.config['UPLOAD_FOLDER']), ABT[1] ))
             # ventana = tkinter.Tk()
@@ -203,6 +208,7 @@ def ExportCSV():
             ABT1 = ABT1.rename(columns={"IOSoc":"CONTR"})
             MPP2 = MPP2.rename(columns={"MAILSOCIO":"MAILSOC"})
             ABT1 = ABT1.rename(columns={"CuitAT":"Cambio_Empleador"})
+            MPP2 = MPP2.rename(columns={"Teléfono":"Telefono"})
 
 
            
@@ -230,7 +236,7 @@ def ExportCSV():
                         print(e) 
 
              # Defino las columnas que se van a exportar
-            header = ["Categoria", "Mod","DIAGNOSTICO","CANT_EST","PCO","CUIL","CONTR","APELLIDO__NOMBRE","CUIT","Razon","MaxDeFIN_REL_LAB","MAILSOC","Cambio_Empleador","GM","Valorizacion","CM","PCM"]
+            header = ["Categoria", "Mod","DIAGNOSTICO","CANT_EST","PCO","CUIL","CONTR","APELLIDO__NOMBRE","CUIT","Razon","MaxDeFIN_REL_LAB","MAILSOC","Cambio_Empleador","Telefono","GM","Valorizacion","CM","PCM"]
             
 
 
